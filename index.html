@@ -374,12 +374,12 @@
 
     </main>
 
-    <!-- MODAL DE EDICIÓN -->
+    <!-- MODAL DE EDICIÓN (ACTUALIZADO CON NIÑOS) -->
     <div class="modal fade" id="modalEditarIglesia" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content card-custom p-3">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title text-title-green fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Datos de la Iglesia</h5>
+                    <h5 class="modal-title text-title-green fw-bold"><i class="bi bi-pencil-square me-2"></i>Editar Datos de la Iglesia y Niños</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -407,6 +407,35 @@
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Fecha de Entrega:</label>
                             <input type="date" id="edit_fecha_entrega" required class="form-control">
+                        </div>
+
+                        <hr class="my-3">
+                        <h6 class="text-title-green fw-bold">Editar Listado Nominal por Edades</h6>
+                        <p class="text-muted small">Separe los nombres por comas o saltos de línea:</p>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-success fw-bold">👧 Niñas (2 - 4 años)</label>
+                            <textarea id="edit_ninas_2_4" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-primary fw-bold">👦 Niños (2 - 4 años)</label>
+                            <textarea id="edit_ninos_2_4" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-success fw-bold">👧 Niñas (5 - 9 años)</label>
+                            <textarea id="edit_ninas_5_9" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-primary fw-bold">👦 Niños (5 - 9 años)</label>
+                            <textarea id="edit_ninos_5_9" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-success fw-bold">👧 Niñas (10 - 14 años)</label>
+                            <textarea id="edit_ninas_10_14" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-primary fw-bold">👦 Niños (10 - 14 años)</label>
+                            <textarea id="edit_ninos_10_14" rows="2" class="form-control"></textarea>
                         </div>
 
                         <div class="col-12 text-end mt-4">
@@ -778,6 +807,14 @@
             document.getElementById('edit_municipio_estado').value = iglesiaSeleccionada.municipio_estado;
             document.getElementById('edit_fecha_entrega').value = iglesiaSeleccionada.fecha_entrega;
 
+            // Rellenar textareas con los niños actuales filtrados
+            document.getElementById('edit_ninas_2_4').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '2-4').map(n => n.nombre_completo).join(', ');
+            document.getElementById('edit_ninos_2_4').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '2-4').map(n => n.nombre_completo).join(', ');
+            document.getElementById('edit_ninas_5_9').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '5-9').map(n => n.nombre_completo).join(', ');
+            document.getElementById('edit_ninos_5_9').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '5-9').map(n => n.nombre_completo).join(', ');
+            document.getElementById('edit_ninas_10_14').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '10-14').map(n => n.nombre_completo).join(', ');
+            document.getElementById('edit_ninos_10_14').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '10-14').map(n => n.nombre_completo).join(', ');
+
             const modal = new bootstrap.Modal(document.getElementById('modalEditarIglesia'));
             modal.show();
         }
@@ -786,7 +823,7 @@
             e.preventDefault();
             const btn = document.getElementById('btn-guardar-edicion');
             btn.disabled = true;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando cambios...`;
 
             try {
                 const nombre_iglesia = document.getElementById('edit_nombre_iglesia').value;
@@ -796,23 +833,62 @@
                 const municipio_estado = document.getElementById('edit_municipio_estado').value;
                 const fecha_entrega = document.getElementById('edit_fecha_entrega').value;
 
-                const { error } = await _supabase
+                // 1. Actualizar datos generales de la iglesia
+                const { error: errorIglesia } = await _supabase
                     .from('iglesias')
                     .update({ nombre_iglesia, nombre_pastor, domicilio, telefono, municipio_estado, fecha_entrega })
                     .eq('id', iglesiaSeleccionada.id);
 
-                if (error) throw error;
+                if (errorIglesia) throw errorIglesia;
 
-                alert('¡Iglesia actualizada exitosamente!');
+                // 2. Reemplazar los niños: borrar anteriores y registrar nuevos corregidos
+                await _supabase.from('ninos').delete().eq('iglesia_id', iglesiaSeleccionada.id);
+
+                const rangos = [
+                    { idText: 'edit_ninas_2_4', genero: 'niña', rango: '2-4' },
+                    { idText: 'edit_ninos_2_4', genero: 'niño', rango: '2-4' },
+                    { idText: 'edit_ninas_5_9', genero: 'niña', rango: '5-9' },
+                    { idText: 'edit_ninos_5_9', genero: 'niño', rango: '5-9' },
+                    { idText: 'edit_ninas_10_14', genero: 'niña', rango: '10-14' },
+                    { idText: 'edit_ninos_10_14', genero: 'niño', rango: '10-14' }
+                ];
+
+                let ninosInserts = [];
+                rangos.forEach(r => {
+                    const texto = document.getElementById(r.idText).value;
+                    if(texto.trim() !== '') {
+                        const nombres = texto.split(/,|\n/);
+                        nombres.forEach(nombre => {
+                            if(nombre.trim() !== '') {
+                                ninosInserts.push({
+                                    iglesia_id: iglesiaSeleccionada.id,
+                                    nombre_completo: nombre.trim(),
+                                    genero: r.genero,
+                                    rango_edad: r.rango
+                                });
+                            }
+                        });
+                    }
+                });
+
+                if(ninosInserts.length > 0) {
+                    const { error: errorNinos } = await _supabase.from('ninos').insert(ninosInserts);
+                    if (errorNinos) throw errorNinos;
+                }
+
+                // Recargar datos actualizados
+                const { data: iglesiaActualizada, error: errReload } = await _supabase
+                    .from('iglesias')
+                    .select('*, ninos(*)')
+                    .eq('id', iglesiaSeleccionada.id)
+                    .single();
+
+                if (!errReload) {
+                    iglesiaSeleccionada = iglesiaActualizada;
+                }
+
+                alert('¡Cambios guardados exitosamente!');
                 bootstrap.Modal.getInstance(document.getElementById('modalEditarIglesia')).hide();
-                
-                iglesiaSeleccionada.nombre_iglesia = nombre_iglesia;
-                iglesiaSeleccionada.nombre_pastor = nombre_pastor;
-                iglesiaSeleccionada.domicilio = domicilio;
-                iglesiaSeleccionada.telefono = telefono;
-                iglesiaSeleccionada.municipio_estado = municipio_estado;
-                iglesiaSeleccionada.fecha_entrega = fecha_entrega;
-
                 verDetalleIglesia(iglesiaSeleccionada.id);
             } catch (err) {
                 alert('Error al actualizar: ' + err.message);
@@ -841,7 +917,7 @@
             }
         }
 
-        // ================= HELPER DE CABECERA CON DATOS DE LA IGLESIA =================
+        // ================= HELPER DE CABECERA CON MÁRGENES CORREGIDOS PARA PDF =================
         function renderEncabezadoIglesia(doc, iglesia, logoBase64, startY, titulo) {
             if (logoBase64) {
                 doc.addImage(logoBase64, 'JPEG', 14, startY, 20, 20);
@@ -850,17 +926,17 @@
             // Título Principal
             doc.setFont("helvetica", "bold");
             doc.setFontSize(11);
-            doc.text(titulo, 120, startY + 6, { align: 'center' });
+            doc.text(titulo, 110, startY + 6, { align: 'center' });
             doc.setFontSize(8);
             doc.setFont("helvetica", "normal");
-            doc.text("Operation Christmas Samaritan's Purse", 120, startY + 11, { align: 'center' });
+            doc.text("Operation Christmas Samaritan's Purse", 110, startY + 11, { align: 'center' });
 
             // Separación Municipio y Estado
             let municipiosEstado = (iglesia.municipio_estado || '').split(',');
             let municipio = municipiosEstado[0] ? municipiosEstado[0].trim() : '';
             let estado = municipiosEstado[1] ? municipiosEstado[1].trim() : '';
 
-            let y = startY + 24;
+            let y = startY + 23;
             doc.setFontSize(7.5);
             
             // Columna Izquierda
@@ -869,11 +945,11 @@
             doc.setFont("helvetica", "normal");
             doc.text(iglesia.nombre_iglesia || "", 52, y);
 
-            // Columna Derecha
+            // Columna Derecha (Márgenes ajustados para evitar desbordes)
             doc.setFont("helvetica", "bold");
-            doc.text("No. TELÉFONO Y CELULAR:", 115, y);
+            doc.text("TELÉFONO:", 110, y);
             doc.setFont("helvetica", "normal");
-            doc.text(iglesia.telefono || "", 158, y);
+            doc.text(iglesia.telefono || "", 132, y);
 
             y += 5;
             doc.setFont("helvetica", "bold");
@@ -882,13 +958,13 @@
             doc.text(iglesia.nombre_pastor || "", 48, y);
 
             doc.setFont("helvetica", "bold");
-            doc.text("MUNICIPIO:", 115, y);
+            doc.text("MUNICIPIO:", 110, y);
             doc.setFont("helvetica", "normal");
-            doc.text(municipio, 133, y);
+            doc.text(municipio, 132, y);
             doc.setFont("helvetica", "bold");
-            doc.text("ESTADO:", 165, y);
+            doc.text("EST.:", 172, y);
             doc.setFont("helvetica", "normal");
-            doc.text(estado, 180, y);
+            doc.text(estado, 182, y);
 
             y += 5;
             doc.setFont("helvetica", "bold");
@@ -897,11 +973,11 @@
             doc.text(iglesia.domicilio || "", 32, y);
 
             doc.setFont("helvetica", "bold");
-            doc.text("FECHA DE ENTREGA DE LA LISTA:", 115, y);
+            doc.text("ENTREGA:", 110, y);
             doc.setFont("helvetica", "normal");
-            doc.text(iglesia.fecha_entrega || "", 165, y);
+            doc.text(iglesia.fecha_entrega || "", 132, y);
 
-            return y + 3;
+            return y + 4;
         }
 
         // ================= RENDER DE BLOQUE CONCENTRADO (TABLA NUMÉRICA) =================
