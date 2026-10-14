@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Samaritan's Purse - Concentrado General de Niños</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="img/logo.jpg">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -354,11 +356,35 @@
                     </div>
                 </div>
 
-                <!-- Buscador de Iglesias -->
+                <!-- Buscador de Iglesias y Filtros Avanzados -->
                 <div class="card-custom p-3 mb-4">
-                    <div class="input-group">
+                    <div class="input-group mb-3">
                         <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
                         <input type="text" id="buscador-iglesias" oninput="filtrarIglesias()" class="form-control" placeholder="Buscar iglesia por nombre, pastor o municipio...">
+                    </div>
+                    <!-- ZONA DE FILTROS DE INFORMACIÓN -->
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold text-muted mb-0">Filtrar por rango de fecha de entrega:</label>
+                            <div class="input-group input-group-sm">
+                                <input type="date" id="filtro-fecha-inicio" onchange="filtrarIglesias()" class="form-control">
+                                <span class="input-group-text">a</span>
+                                <input type="date" id="filtro-fecha-fin" onchange="filtrarIglesias()" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted mb-0">Ordenar por:</label>
+                            <select id="filtro-orden" onchange="filtrarIglesias()" class="form-select form-select-sm">
+                                <option value="nombre-asc">Nombre de Iglesia (A-Z)</option>
+                                <option value="fecha-reciente">Fecha de Entrega (Más reciente)</option>
+                                <option value="infantes-mayor">Mayor cantidad de infantes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 text-end d-flex align-items-end justify-content-end pt-3">
+                            <button onclick="limpiarFiltros()" class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar Filtros
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -550,7 +576,6 @@
             const group = btn.closest('.dynamic-input-group');
             const container = group.parentElement;
             
-            // Si solo queda 1 casillero, lo limpiamos en lugar de borrarlo
             if (container.children.length === 1) {
                 const input = group.querySelector('input');
                 input.value = '';
@@ -590,7 +615,6 @@
             return nombres;
         }
 
-        // Inicializar los casilleros del formulario principal al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             CATEGORIAS_EDAD.forEach(cat => {
                 inicializarInputsDinamicos(`container_${cat.id}`);
@@ -733,16 +757,48 @@
             }
 
             datosIglesiasZona = iglesias;
-            renderizarDashboard(datosIglesiasZona);
+            filtrarIglesias();
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('buscador-iglesias').value = '';
+            document.getElementById('filtro-fecha-inicio').value = '';
+            document.getElementById('filtro-fecha-fin').value = '';
+            document.getElementById('filtro-orden').value = 'nombre-asc';
+            filtrarIglesias();
         }
 
         function filtrarIglesias() {
             const query = document.getElementById('buscador-iglesias').value.toLowerCase();
-            const filtradas = datosIglesiasZona.filter(iglesia => 
-                iglesia.nombre_iglesia.toLowerCase().includes(query) ||
-                iglesia.nombre_pastor.toLowerCase().includes(query) ||
-                iglesia.municipio_estado.toLowerCase().includes(query)
-            );
+            const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
+            const fechaFin = document.getElementById('filtro-fecha-fin').value;
+            const orden = document.getElementById('filtro-orden').value;
+
+            let filtradas = datosIglesiasZona.filter(iglesia => {
+                let coincideTexto = 
+                    iglesia.nombre_iglesia.toLowerCase().includes(query) ||
+                    iglesia.nombre_pastor.toLowerCase().includes(query) ||
+                    iglesia.municipio_estado.toLowerCase().includes(query);
+
+                let coincideFecha = true;
+                if (fechaInicio && iglesia.fecha_entrega < fechaInicio) coincideFecha = false;
+                if (fechaFin && iglesia.fecha_entrega > fechaFin) coincideFecha = false;
+
+                return coincideTexto && coincideFecha;
+            });
+
+            // Ordenamiento
+            filtradas.sort((a, b) => {
+                if (orden === 'nombre-asc') {
+                    return a.nombre_iglesia.localeCompare(b.nombre_iglesia);
+                } else if (orden === 'fecha-reciente') {
+                    return new Date(b.fecha_entrega) - new Date(a.fecha_entrega);
+                } else if (orden === 'infantes-mayor') {
+                    return b.ninos.length - a.ninos.length;
+                }
+                return 0;
+            });
+
             renderizarDashboard(filtradas);
         }
 
@@ -757,7 +813,7 @@
             });
 
             if (listaIglesias.length === 0) {
-                contenedorCatalogo.innerHTML = '<p class="text-muted text-center py-3">No se encontraron iglesias registradas con ese criterio.</p>';
+                contenedorCatalogo.innerHTML = '<p class="text-muted text-center py-3">No se encontraron iglesias registradas con esos filtros.</p>';
             }
 
             listaIglesias.forEach(iglesia => {
@@ -935,7 +991,6 @@
             document.getElementById('edit_municipio_estado').value = iglesiaSeleccionada.municipio_estado;
             document.getElementById('edit_fecha_entrega').value = iglesiaSeleccionada.fecha_entrega;
 
-            // Rellenar casillero por casillero en el modal de edición
             CATEGORIAS_EDAD.forEach(cat => {
                 const nombresCat = iglesiaSeleccionada.ninos
                     .filter(n => n.genero === cat.genero && n.rango_edad === cat.rango)
@@ -962,7 +1017,6 @@
                 const municipio_estado = document.getElementById('edit_municipio_estado').value;
                 const fecha_entrega = document.getElementById('edit_fecha_entrega').value;
 
-                // 1. Actualizar iglesia
                 const { error: errorIglesia } = await _supabase
                     .from('iglesias')
                     .update({ nombre_iglesia, nombre_pastor, domicilio, telefono, municipio_estado, fecha_entrega })
@@ -970,7 +1024,6 @@
 
                 if (errorIglesia) throw errorIglesia;
 
-                // 2. Borrar anteriores y reinsertar nuevos
                 await _supabase.from('ninos').delete().eq('iglesia_id', iglesiaSeleccionada.id);
 
                 let ninosInserts = [];
@@ -991,7 +1044,6 @@
                     if (errorNinos) throw errorNinos;
                 }
 
-                // Cargar iglesia actualizada
                 const { data: iglesiaActualizada, error: errReload } = await _supabase
                     .from('iglesias')
                     .select('*, ninos(*)')
@@ -1032,7 +1084,7 @@
             }
         }
 
-        // ================= HELPER DE CABECERA CON MÁRGENES Y ALINEACIÓN CORREGIDA PARA PDF =================
+        // ================= HELPER DE CABECERA CON LÍMITES Y SALTOS AUTOMÁTICOS PARA PDF =================
         function renderEncabezadoIglesia(doc, iglesia, logoBase64, startY, titulo) {
             if (logoBase64) {
                 doc.addImage(logoBase64, 'JPEG', 14, startY, 20, 20);
@@ -1046,53 +1098,75 @@
             doc.setFont("helvetica", "normal");
             doc.text("Operation Christmas Samaritan's Purse", 110, startY + 11, { align: 'center' });
 
-            // Separación Municipio y Estado
             let municipiosEstado = (iglesia.municipio_estado || '').split(',');
             let municipio = municipiosEstado[0] ? municipiosEstado[0].trim() : '';
             let estado = municipiosEstado[1] ? municipiosEstado[1].trim() : '';
 
-            let y = startY + 23;
+            let y = startY + 22;
             doc.setFontSize(7.5);
+
+            // Función para dividir textos largos con ancho máximo en PDF
+            function escribirConLimite(label, valor, xLabel, xValor, maxWidth, currentY) {
+                doc.setFont("helvetica", "bold");
+                doc.text(label, xLabel, currentY);
+                doc.setFont("helvetica", "normal");
+                let lineas = doc.splitTextToSize(valor || "", maxWidth);
+                doc.text(lineas, xValor, currentY);
+                return currentY + (lineas.length * 3.5);
+            }
+
+            // Columna Izquierda (Límite de ancho 45-50mm)
+            let yLeft = y;
+            let yRight = y;
+
+            doc.setFont("helvetica", "bold");
+            doc.text("NOMBRE DE LA IGLESIA:", 14, yLeft);
+            doc.setFont("helvetica", "normal");
+            let lineasIglesia = doc.splitTextToSize(iglesia.nombre_iglesia || "", 45);
+            doc.text(lineasIglesia, 52, yLeft);
+            yLeft += lineasIglesia.length * 3.5;
+
+            doc.setFont("helvetica", "bold");
+            doc.text("NOMBRE DEL PASTOR:", 14, yLeft);
+            doc.setFont("helvetica", "normal");
+            let lineasPastor = doc.splitTextToSize(iglesia.nombre_pastor || "", 48);
+            doc.text(lineasPastor, 48, yLeft);
+            yLeft += lineasPastor.length * 3.5;
+
+            doc.setFont("helvetica", "bold");
+            doc.text("DOMICILIO:", 14, yLeft);
+            doc.setFont("helvetica", "normal");
+            let lineasDomicilio = doc.splitTextToSize(iglesia.domicilio || "", 62);
+            doc.text(lineasDomicilio, 32, yLeft);
+            yLeft += lineasDomicilio.length * 3.5;
+
+            // Columna Derecha
+            doc.setFont("helvetica", "bold");
+            doc.text("TELÉFONO:", 110, yRight);
+            doc.setFont("helvetica", "normal");
+            doc.text(iglesia.telefono || "", 130, yRight);
+            yRight += 4;
+
+            doc.setFont("helvetica", "bold");
+            doc.text("MUNICIPIO:", 110, yRight);
+            doc.setFont("helvetica", "normal");
+            let lineasMuni = doc.splitTextToSize(municipio, 40);
+            doc.text(lineasMuni, 130, yRight);
             
-            // Columna Izquierda
             doc.setFont("helvetica", "bold");
-            doc.text("NOMBRE DE LA IGLESIA:", 14, y);
+            doc.text("EST.:", 172, yRight);
             doc.setFont("helvetica", "normal");
-            doc.text(iglesia.nombre_iglesia || "", 52, y);
-
-            // Columna Derecha (Márgenes ajustados)
-            doc.setFont("helvetica", "bold");
-            doc.text("TELÉFONO:", 110, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(iglesia.telefono || "", 132, y);
-
-            y += 5;
-            doc.setFont("helvetica", "bold");
-            doc.text("NOMBRE DEL PASTOR:", 14, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(iglesia.nombre_pastor || "", 48, y);
+            doc.text(estado, 181, yRight);
+            yRight += lineasMuni.length * 3.5;
 
             doc.setFont("helvetica", "bold");
-            doc.text("MUNICIPIO:", 110, y);
+            doc.text("ENTREGA:", 110, yRight);
             doc.setFont("helvetica", "normal");
-            doc.text(municipio, 132, y);
-            doc.setFont("helvetica", "bold");
-            doc.text("EST.:", 172, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(estado, 182, y);
+            doc.text(iglesia.fecha_entrega || "", 130, yRight);
+            yRight += 4;
 
-            y += 5;
-            doc.setFont("helvetica", "bold");
-            doc.text("DOMICILIO:", 14, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(iglesia.domicilio || "", 32, y);
-
-            doc.setFont("helvetica", "bold");
-            doc.text("ENTREGA:", 110, y);
-            doc.setFont("helvetica", "normal");
-            doc.text(iglesia.fecha_entrega || "", 132, y);
-
-            return y + 4;
+            let maxY = Math.max(yLeft, yRight);
+            return maxY + 2;
         }
 
         // ================= RENDER DE BLOQUE CONCENTRADO (TABLA NUMÉRICA) =================
@@ -1142,21 +1216,18 @@
 
             let rowsNominal = [];
 
-            // Sección 2-4
             rowsNominal.push([{ content: 'NIÑOS 2-4', colSpan: 4, styles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
             let max24 = Math.max(ninas24.length, ninos24.length);
             for (let i = 0; i < max24; i++) {
                 rowsNominal.push([i + 1, ninos24[i] ? ninos24[i].nombre_completo : '', i + 1, ninas24[i] ? ninas24[i].nombre_completo : '']);
             }
 
-            // Sección 5-9
             rowsNominal.push([{ content: 'NIÑOS 5-9', colSpan: 4, styles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
             let max59 = Math.max(ninas59.length, ninos59.length);
             for (let i = 0; i < max59; i++) {
                 rowsNominal.push([i + 1, ninos59[i] ? ninos59[i].nombre_completo : '', i + 1, ninas59[i] ? ninas59[i].nombre_completo : '']);
             }
 
-            // Sección 10-14
             rowsNominal.push([{ content: 'NIÑOS 10-14', colSpan: 4, styles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' } }]);
             let max1014 = Math.max(ninas1014.length, ninos1014.length);
             for (let i = 0; i < max1014; i++) {
@@ -1181,7 +1252,6 @@
             return doc.lastAutoTable.finalY;
         }
 
-        // 1. DESCARGA: GENERAL CONCENTRADO (2 FORMATOS POR PÁGINA)
         async function descargarGeneralConcentradoPDF() {
             if (!datosIglesiasZona || datosIglesiasZona.length === 0) {
                 alert('No hay iglesias registradas en esta zona.');
@@ -1195,10 +1265,8 @@
             for (let i = 0; i < datosIglesiasZona.length; i += 2) {
                 if (i > 0) doc.addPage();
 
-                // Formato Superior
                 renderBloqueConcentrado(doc, datosIglesiasZona[i], logoBase64, 10);
 
-                // Formato Inferior (si existe)
                 if (i + 1 < datosIglesiasZona.length) {
                     renderBloqueConcentrado(doc, datosIglesiasZona[i + 1], logoBase64, 150);
                 }
@@ -1207,7 +1275,6 @@
             doc.save(`General_Concentrado_Zona_${zonaActualId}.pdf`);
         }
 
-        // 2. DESCARGA: GENERAL LISTADO (NOMINAL POR EDADES)
         async function descargarGeneralListadoPDF() {
             if (!datosIglesiasZona || datosIglesiasZona.length === 0) {
                 alert('No hay iglesias registradas en esta zona.');
@@ -1226,7 +1293,6 @@
             doc.save(`General_Listado_Zona_${zonaActualId}.pdf`);
         }
 
-        // 3. DESCARGA: MEZCLA DE TODOS (CONCENTRADO + LISTADO DEBAJO)
         async function descargarPDFMasterZona() {
             if (!datosIglesiasZona || datosIglesiasZona.length === 0) {
                 alert('No hay iglesias registradas en esta zona.');
@@ -1241,10 +1307,7 @@
                 if (index > 0) doc.addPage();
                 let iglesia = datosIglesiasZona[index];
 
-                // Bloque superior: Concentrado
                 let lastY = renderBloqueConcentrado(doc, iglesia, logoBase64, 10);
-
-                // Bloque inferior: Listado nominal directamente debajo
                 renderBloqueListado(doc, iglesia, logoBase64, lastY + 8, false);
             }
 
