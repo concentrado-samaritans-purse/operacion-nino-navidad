@@ -70,6 +70,35 @@
             height: 100px;
             object-fit: cover;
         }
+
+        /* Estilos para las cajas perimetradas dinámicas */
+        .dynamic-input-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .input-perimetro {
+            border: 1.5px solid #ced4da;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background-color: #ffffff;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .input-perimetro:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+            outline: none;
+        }
+
+        .badge-index {
+            min-width: 28px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <script>
@@ -138,7 +167,7 @@
         <!-- ================= VISTA 1: FORMULARIO ================= -->
         <section id="vista-form" class="card-custom p-4 p-md-5">
             <h2 class="text-title-green mb-2"><i class="bi bi-clipboard2-plus-fill me-2"></i>Concentrado General de Niños por Iglesia</h2>
-            <p class="text-muted mb-4">Complete la información general y registre los nombres de los niños separados por edades.</p>
+            <p class="text-muted mb-4">Complete la información general y registre cada niño en su casillero correspondiente.</p>
 
             <form id="form-iglesia" onsubmit="guardarRegistro(event)" class="row g-3">
                 <div class="col-md-6">
@@ -178,45 +207,46 @@
 
                 <hr class="my-4">
 
-                <h3 class="text-title-green h4 mb-3"><i class="bi bi-people-fill me-2"></i>Listado Nominal por Edades</h3>
-                <p class="text-muted small">Escriba los nombres completos separados por comas o saltos de línea:</p>
+                <h3 class="text-title-green h4 mb-2"><i class="bi bi-people-fill me-2"></i>Listado Nominal por Edades</h3>
+                <p class="text-muted small mb-3">Escriba el nombre en un cuadro. Al escribir, automáticamente aparecerá el siguiente casillero:</p>
 
+                <!-- CASILLEROS DINÁMICOS PARA FORMULARIO -->
                 <div class="col-md-6">
                     <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-success"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (2 - 4 años)</label>
-                        <textarea id="ninas_2_4" rows="3" class="form-control" placeholder="Ej. Yogana Amaris, Angieli..."></textarea>
+                        <label class="form-label fw-bold text-success mb-2"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (2 - 4 años)</label>
+                        <div id="container_ninas_2_4"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-primary"><i class="bi bi-gender-male me-1"></i> 👦 Niños (2 - 4 años)</label>
-                        <textarea id="ninos_2_4" rows="3" class="form-control" placeholder="Ej. Isaías de Dios, Oliver..."></textarea>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-success"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (5 - 9 años)</label>
-                        <textarea id="ninas_5_9" rows="3" class="form-control" placeholder="Nombres de niñas de 5 a 9..."></textarea>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-primary"><i class="bi bi-gender-male me-1"></i> 👦 Niños (5 - 9 años)</label>
-                        <textarea id="ninos_5_9" rows="3" class="form-control" placeholder="Nombres de niños de 5 a 9..."></textarea>
+                        <label class="form-label fw-bold text-primary mb-2"><i class="bi bi-gender-male me-1"></i> 👦 Niños (2 - 4 años)</label>
+                        <div id="container_ninos_2_4"></div>
                     </div>
                 </div>
 
                 <div class="col-md-6">
                     <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-success"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (10 - 14 años)</label>
-                        <textarea id="ninas_10_14" rows="3" class="form-control" placeholder="Nombres de niñas de 10 a 14..."></textarea>
+                        <label class="form-label fw-bold text-success mb-2"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (5 - 9 años)</label>
+                        <div id="container_ninas_5_9"></div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="p-3 border rounded bg-light shadow-sm">
-                        <label class="form-label fw-bold text-primary"><i class="bi bi-gender-male me-1"></i> 👦 Niños (10 - 14 años)</label>
-                        <textarea id="ninos_10_14" rows="3" class="form-control" placeholder="Nombres de niños de 10 a 14..."></textarea>
+                        <label class="form-label fw-bold text-primary mb-2"><i class="bi bi-gender-male me-1"></i> 👦 Niños (5 - 9 años)</label>
+                        <div id="container_ninos_5_9"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light shadow-sm">
+                        <label class="form-label fw-bold text-success mb-2"><i class="bi bi-gender-female me-1"></i> 👧 Niñas (10 - 14 años)</label>
+                        <div id="container_ninas_10_14"></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 border rounded bg-light shadow-sm">
+                        <label class="form-label fw-bold text-primary mb-2"><i class="bi bi-gender-male me-1"></i> 👦 Niños (10 - 14 años)</label>
+                        <div id="container_ninos_10_14"></div>
                     </div>
                 </div>
 
@@ -374,7 +404,7 @@
 
     </main>
 
-    <!-- MODAL DE EDICIÓN (ACTUALIZADO CON NIÑOS) -->
+    <!-- MODAL DE EDICIÓN CON CASILLEROS DINÁMICOS -->
     <div class="modal fade" id="modalEditarIglesia" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content card-custom p-3">
@@ -410,32 +440,33 @@
                         </div>
 
                         <hr class="my-3">
-                        <h6 class="text-title-green fw-bold">Editar Listado Nominal por Edades</h6>
-                        <p class="text-muted small">Separe los nombres por comas o saltos de línea:</p>
+                        <h6 class="text-title-green fw-bold mb-1">Editar Listado Nominal por Edades</h6>
+                        <p class="text-muted small mb-3">Modifique los casilleros existentes o agregue nuevos completando la casilla en blanco:</p>
 
+                        <!-- CASILLEROS DINÁMICOS PARA MODAL DE EDICIÓN -->
                         <div class="col-md-6">
                             <label class="form-label text-success fw-bold">👧 Niñas (2 - 4 años)</label>
-                            <textarea id="edit_ninas_2_4" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninas_2_4"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">👦 Niños (2 - 4 años)</label>
-                            <textarea id="edit_ninos_2_4" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninos_2_4"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-success fw-bold">👧 Niñas (5 - 9 años)</label>
-                            <textarea id="edit_ninas_5_9" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninas_5_9"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">👦 Niños (5 - 9 años)</label>
-                            <textarea id="edit_ninos_5_9" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninos_5_9"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-success fw-bold">👧 Niñas (10 - 14 años)</label>
-                            <textarea id="edit_ninas_10_14" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninas_10_14"></div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-primary fw-bold">👦 Niños (10 - 14 años)</label>
-                            <textarea id="edit_ninos_10_14" rows="2" class="form-control"></textarea>
+                            <div id="edit_container_ninos_10_14"></div>
                         </div>
 
                         <div class="col-12 text-end mt-4">
@@ -457,6 +488,114 @@
         let zonaActualId = null;
         let iglesiaSeleccionada = null;
         let datosIglesiasZona = [];
+
+        // Definición de las 6 categorías de rangos de edad
+        const CATEGORIAS_EDAD = [
+            { id: 'ninas_2_4', genero: 'niña', rango: '2-4' },
+            { id: 'ninos_2_4', genero: 'niño', rango: '2-4' },
+            { id: 'ninas_5_9', genero: 'niña', rango: '5-9' },
+            { id: 'ninos_5_9', genero: 'niño', rango: '5-9' },
+            { id: 'ninas_10_14', genero: 'niña', rango: '10-14' },
+            { id: 'ninos_10_14', genero: 'niño', rango: '10-14' }
+        ];
+
+        // LÓGICA DE CASILLEROS DINÁMICOS
+        function inicializarInputsDinamicos(containerId, nombresIniciales = []) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            const listaNombres = nombresIniciales.length > 0 ? nombresIniciales : [''];
+
+            listaNombres.forEach((nombre) => {
+                agregarFilaInput(container, nombre);
+            });
+
+            asegurarFilaVaciaFinal(container);
+        }
+
+        function agregarFilaInput(container, valorInicial = '') {
+            const index = container.children.length + 1;
+            const divGroup = document.createElement('div');
+            divGroup.className = 'dynamic-input-group';
+
+            divGroup.innerHTML = `
+                <span class="badge bg-secondary badge-index text-white">${index}</span>
+                <input type="text" class="form-control input-perimetro dynamic-input" placeholder="Nombre completo..." value="${valorInicial}">
+                <button type="button" class="btn btn-outline-danger btn-sm border-0" onclick="eliminarFilaInput(this)" title="Eliminar este casillero">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+
+            const input = divGroup.querySelector('input');
+            input.addEventListener('input', function() {
+                asegurarFilaVaciaFinal(container);
+            });
+
+            container.appendChild(divGroup);
+            actualizarNumeracionInputs(container);
+        }
+
+        function reindexarContainer(container) {
+            Array.from(container.children).forEach((group, idx) => {
+                const badge = group.querySelector('.badge-index');
+                if (badge) badge.innerText = idx + 1;
+            });
+        }
+
+        function actualizarNumeracionInputs(container) {
+            reindexarContainer(container);
+        }
+
+        function eliminarFilaInput(btn) {
+            const group = btn.closest('.dynamic-input-group');
+            const container = group.parentElement;
+            
+            // Si solo queda 1 casillero, lo limpiamos en lugar de borrarlo
+            if (container.children.length === 1) {
+                const input = group.querySelector('input');
+                input.value = '';
+                return;
+            }
+
+            group.remove();
+            asegurarFilaVaciaFinal(container);
+            reindexarContainer(container);
+        }
+
+        function asegurarFilaVaciaFinal(container) {
+            const inputs = container.querySelectorAll('.dynamic-input');
+            if (inputs.length === 0) {
+                agregarFilaInput(container, '');
+                return;
+            }
+
+            const ultimoInput = inputs[inputs.length - 1];
+            if (ultimoInput.value.trim() !== '') {
+                agregarFilaInput(container, '');
+            }
+        }
+
+        function obtenerValoresContainer(containerId) {
+            const container = document.getElementById(containerId);
+            if(!container) return [];
+
+            const inputs = container.querySelectorAll('.dynamic-input');
+            let nombres = [];
+            inputs.forEach(input => {
+                const val = input.value.trim();
+                if (val !== '') {
+                    nombres.push(val);
+                }
+            });
+            return nombres;
+        }
+
+        // Inicializar los casilleros del formulario principal al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            CATEGORIAS_EDAD.forEach(cat => {
+                inicializarInputsDinamicos(`container_${cat.id}`);
+            });
+        });
 
         function obtenerLogoBase64() {
             return new Promise((resolve) => {
@@ -517,31 +656,17 @@
                 if (iglesiaError) throw iglesiaError;
                 const iglesiaId = iglesiaData[0].id;
 
-                const rangos = [
-                    { idText: 'ninas_2_4', genero: 'niña', rango: '2-4' },
-                    { idText: 'ninos_2_4', genero: 'niño', rango: '2-4' },
-                    { idText: 'ninas_5_9', genero: 'niña', rango: '5-9' },
-                    { idText: 'ninos_5_9', genero: 'niño', rango: '5-9' },
-                    { idText: 'ninas_10_14', genero: 'niña', rango: '10-14' },
-                    { idText: 'ninos_10_14', genero: 'niño', rango: '10-14' }
-                ];
-
                 let ninosInserts = [];
-                rangos.forEach(r => {
-                    const texto = document.getElementById(r.idText).value;
-                    if(texto.trim() !== '') {
-                        const nombres = texto.split(/,|\n/);
-                        nombres.forEach(nombre => {
-                            if(nombre.trim() !== '') {
-                                ninosInserts.push({
-                                    iglesia_id: iglesiaId,
-                                    nombre_completo: nombre.trim(),
-                                    genero: r.genero,
-                                    rango_edad: r.rango
-                                });
-                            }
+                CATEGORIAS_EDAD.forEach(cat => {
+                    const nombres = obtenerValoresContainer(`container_${cat.id}`);
+                    nombres.forEach(nombre => {
+                        ninosInserts.push({
+                            iglesia_id: iglesiaId,
+                            nombre_completo: nombre,
+                            genero: cat.genero,
+                            rango_edad: cat.rango
                         });
-                    }
+                    });
                 });
 
                 if(ninosInserts.length > 0) {
@@ -551,6 +676,9 @@
 
                 alert('¡Concentrado guardado exitosamente!');
                 document.getElementById('form-iglesia').reset();
+                CATEGORIAS_EDAD.forEach(cat => {
+                    inicializarInputsDinamicos(`container_${cat.id}`);
+                });
             } catch (err) {
                 alert('Error al guardar: ' + err.message);
             } finally {
@@ -807,13 +935,14 @@
             document.getElementById('edit_municipio_estado').value = iglesiaSeleccionada.municipio_estado;
             document.getElementById('edit_fecha_entrega').value = iglesiaSeleccionada.fecha_entrega;
 
-            // Rellenar textareas con los niños actuales filtrados
-            document.getElementById('edit_ninas_2_4').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '2-4').map(n => n.nombre_completo).join(', ');
-            document.getElementById('edit_ninos_2_4').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '2-4').map(n => n.nombre_completo).join(', ');
-            document.getElementById('edit_ninas_5_9').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '5-9').map(n => n.nombre_completo).join(', ');
-            document.getElementById('edit_ninos_5_9').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '5-9').map(n => n.nombre_completo).join(', ');
-            document.getElementById('edit_ninas_10_14').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niña' && n.rango_edad === '10-14').map(n => n.nombre_completo).join(', ');
-            document.getElementById('edit_ninos_10_14').value = iglesiaSeleccionada.ninos.filter(n => n.genero === 'niño' && n.rango_edad === '10-14').map(n => n.nombre_completo).join(', ');
+            // Rellenar casillero por casillero en el modal de edición
+            CATEGORIAS_EDAD.forEach(cat => {
+                const nombresCat = iglesiaSeleccionada.ninos
+                    .filter(n => n.genero === cat.genero && n.rango_edad === cat.rango)
+                    .map(n => n.nombre_completo);
+
+                inicializarInputsDinamicos(`edit_container_${cat.id}`, nombresCat);
+            });
 
             const modal = new bootstrap.Modal(document.getElementById('modalEditarIglesia'));
             modal.show();
@@ -833,7 +962,7 @@
                 const municipio_estado = document.getElementById('edit_municipio_estado').value;
                 const fecha_entrega = document.getElementById('edit_fecha_entrega').value;
 
-                // 1. Actualizar datos generales de la iglesia
+                // 1. Actualizar iglesia
                 const { error: errorIglesia } = await _supabase
                     .from('iglesias')
                     .update({ nombre_iglesia, nombre_pastor, domicilio, telefono, municipio_estado, fecha_entrega })
@@ -841,34 +970,20 @@
 
                 if (errorIglesia) throw errorIglesia;
 
-                // 2. Reemplazar los niños: borrar anteriores y registrar nuevos corregidos
+                // 2. Borrar anteriores y reinsertar nuevos
                 await _supabase.from('ninos').delete().eq('iglesia_id', iglesiaSeleccionada.id);
 
-                const rangos = [
-                    { idText: 'edit_ninas_2_4', genero: 'niña', rango: '2-4' },
-                    { idText: 'edit_ninos_2_4', genero: 'niño', rango: '2-4' },
-                    { idText: 'edit_ninas_5_9', genero: 'niña', rango: '5-9' },
-                    { idText: 'edit_ninos_5_9', genero: 'niño', rango: '5-9' },
-                    { idText: 'edit_ninas_10_14', genero: 'niña', rango: '10-14' },
-                    { idText: 'edit_ninos_10_14', genero: 'niño', rango: '10-14' }
-                ];
-
                 let ninosInserts = [];
-                rangos.forEach(r => {
-                    const texto = document.getElementById(r.idText).value;
-                    if(texto.trim() !== '') {
-                        const nombres = texto.split(/,|\n/);
-                        nombres.forEach(nombre => {
-                            if(nombre.trim() !== '') {
-                                ninosInserts.push({
-                                    iglesia_id: iglesiaSeleccionada.id,
-                                    nombre_completo: nombre.trim(),
-                                    genero: r.genero,
-                                    rango_edad: r.rango
-                                });
-                            }
+                CATEGORIAS_EDAD.forEach(cat => {
+                    const nombres = obtenerValoresContainer(`edit_container_${cat.id}`);
+                    nombres.forEach(nombre => {
+                        ninosInserts.push({
+                            iglesia_id: iglesiaSeleccionada.id,
+                            nombre_completo: nombre,
+                            genero: cat.genero,
+                            rango_edad: cat.rango
                         });
-                    }
+                    });
                 });
 
                 if(ninosInserts.length > 0) {
@@ -876,7 +991,7 @@
                     if (errorNinos) throw errorNinos;
                 }
 
-                // Recargar datos actualizados
+                // Cargar iglesia actualizada
                 const { data: iglesiaActualizada, error: errReload } = await _supabase
                     .from('iglesias')
                     .select('*, ninos(*)')
@@ -917,7 +1032,7 @@
             }
         }
 
-        // ================= HELPER DE CABECERA CON MÁRGENES CORREGIDOS PARA PDF =================
+        // ================= HELPER DE CABECERA CON MÁRGENES Y ALINEACIÓN CORREGIDA PARA PDF =================
         function renderEncabezadoIglesia(doc, iglesia, logoBase64, startY, titulo) {
             if (logoBase64) {
                 doc.addImage(logoBase64, 'JPEG', 14, startY, 20, 20);
@@ -945,7 +1060,7 @@
             doc.setFont("helvetica", "normal");
             doc.text(iglesia.nombre_iglesia || "", 52, y);
 
-            // Columna Derecha (Márgenes ajustados para evitar desbordes)
+            // Columna Derecha (Márgenes ajustados)
             doc.setFont("helvetica", "bold");
             doc.text("TELÉFONO:", 110, y);
             doc.setFont("helvetica", "normal");
