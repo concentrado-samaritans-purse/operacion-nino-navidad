@@ -181,6 +181,7 @@
                         <option value="4">Xalapa</option>
                         <option value="5">Manlio</option>
                         <option value="6">Medellín</option>
+                        <option value="7">Carlos A. Carrillo</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -280,6 +281,7 @@
                         <option value="4">Xalapa</option>
                         <option value="5">Manlio</option>
                         <option value="6">Medellín</option>
+                        <option value="7">Carlos A. Carrillo</option>
                     </select>
                 </div>
                 <div class="text-start mb-4">
@@ -527,7 +529,6 @@
             { id: 'ninos_10_14', genero: 'niño', rango: '10-14' }
         ];
 
-        // Función de sanitización para prevenir XSS y limpiar strings maliciosos
         function sanitizarTexto(str) {
             if (!str) return '';
             return str.replace(/[<>]/g, '').trim();
@@ -662,7 +663,6 @@
             btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando concentrado...`;
 
             try {
-                // Sanitización y validación de campos generales
                 const zona_id = parseInt(document.getElementById('zona_id').value, 10);
                 const nombre_iglesia = sanitizarTexto(document.getElementById('nombre_iglesia').value);
                 const nombre_pastor = sanitizarTexto(document.getElementById('nombre_pastor').value);
@@ -671,7 +671,7 @@
                 const municipio_estado = sanitizarTexto(document.getElementById('municipio_estado').value);
                 const fecha_entrega = document.getElementById('fecha_entrega').value;
 
-                if (isNaN(zona_id) || zona_id < 1 || zona_id > 6) {
+                if (isNaN(zona_id) || zona_id < 1 || zona_id > 7) {
                     throw new Error('Zona seleccionada no válida.');
                 }
 
@@ -912,7 +912,6 @@
 
             let htmlTablaNombres = '';
             for(let i=0; i<maxLen; i++) {
-                // Se construye sanitizando o estructurando de forma segura
                 let n1 = ninas24[i] ? document.createTextNode(ninas24[i].nombre_completo).nodeValue : '';
                 let n2 = ninos24[i] ? document.createTextNode(ninos24[i].nombre_completo).nodeValue : '';
                 let n3 = ninas59[i] ? document.createTextNode(ninas59[i].nombre_completo).nodeValue : '';
@@ -1006,7 +1005,6 @@
                 </div>
             `;
 
-            // Asignación segura de textos con textContent contra XSS
             document.getElementById('det-iglesia').textContent = iglesiaSeleccionada.nombre_iglesia;
             document.getElementById('det-pastor').textContent = iglesiaSeleccionada.nombre_pastor;
             document.getElementById('det-domicilio').textContent = iglesiaSeleccionada.domicilio;
@@ -1213,7 +1211,7 @@
                 body: [
                     ['NIÑAS', ninas24, ninas59, ninas1014, totNinas],
                     ['NIÑOS', ninos24, ninos59, ninos1014, totNinos],
-                    ['TOTAL POR EDADES', ninas24 + ninos24, ninas59 + ninos59, ninas1014 + ninas1014, totNinas + totNinos]
+                    ['TOTAL POR EDADES', ninas24 + ninos24, ninas59 + ninos59, ninas1014 + ninos1014, totNinas + totNinos]
                 ],
                 theme: 'grid',
                 headStyles: { fillColor: [40, 167, 69], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
@@ -1388,7 +1386,7 @@
                     ninos24[i] ? ninos24[i].nombre_completo : '',
                     ninas59[i] ? ninas59[i].nombre_completo : '',
                     ninos59[i] ? ninos59[i].nombre_completo : '',
-                    ninos1014[i] ? ninas1014[i].nombre_completo : '',
+                    ninos1014[i] ? ninos1014[i].nombre_completo : '',
                     ninos1014[i] ? ninos1014[i].nombre_completo : ''
                 ]);
             }
