@@ -51,6 +51,28 @@
             transform: scale(0.97);
         }
 
+        .btn-trasladar {
+            background-color: #6d28d9;
+            border-color: #6d28d9;
+            color: #ffffff;
+        }
+        .btn-trasladar:hover {
+            background-color: #5b21b6;
+            border-color: #5b21b6;
+            color: #ffffff;
+        }
+
+        .btn-whatsapp {
+            background-color: #22c55e;
+            border-color: #22c55e;
+            color: #ffffff;
+        }
+        .btn-whatsapp:hover {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: #ffffff;
+        }
+
         .text-title-green {
             color: #198754;
             font-weight: 700;
@@ -420,7 +442,13 @@
             <div class="card border-success shadow-sm mb-4">
                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-tools me-2"></i>Zona Exclusiva de Administración de Iglesia</h5>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button onclick="abrirModalNotificarWhatsApp()" class="btn btn-whatsapp btn-sm fw-bold btn-animated rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-whatsapp me-1"></i> Notificar
+                        </button>
+                        <button onclick="abrirModalTrasladarZona()" class="btn btn-trasladar btn-sm fw-bold btn-animated rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-arrow-left-right me-1"></i> Trasladar
+                        </button>
                         <button onclick="abrirModalEdicionIglesia()" class="btn btn-warning btn-sm fw-bold text-dark btn-animated">
                             <i class="bi bi-pencil-square me-1"></i> Editar
                         </button>
@@ -506,6 +534,119 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TRASLADAR DE ZONA -->
+    <div class="modal fade" id="modalTrasladarZona" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-dark">
+                <div class="modal-header text-white border-0" style="background-color: #6d28d9;">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left-right"></i> Trasladar de Zona
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-3 text-secondary">
+                        Iglesia seleccionada: <strong class="text-dark" id="trasladar-nombre-iglesia">---</strong>
+                    </p>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">Seleccione la Zona Destino:</label>
+                        <select id="trasladar-zona-destino" class="form-select form-select-lg fs-6">
+                            <option value="1">San Andrés</option>
+                            <option value="2">Tezonapa</option>
+                            <option value="3">Orizaba</option>
+                            <option value="4">Xalapa</option>
+                            <option value="5">Manlio</option>
+                            <option value="6">Medellín</option>
+                            <option value="7">Carlos A. Carrillo</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-confirmar-traslado" onclick="confirmarTrasladoZona()" class="btn btn-trasladar w-100 py-2 fw-bold rounded-3 shadow-sm">
+                        Confirmar Traslado
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTIFICAR POR WHATSAPP -->
+    <div class="modal fade" id="modalNotificarWhatsApp" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden text-dark">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                        <i class="bi bi-whatsapp"></i> Notificar por WhatsApp y Mensaje Editable
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary mb-1">1. Enviar mensaje a:</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light fw-bold">Pastor:</span>
+                                <input type="text" id="wa-nombre-pastor" class="form-control" oninput="actualizarMensajeWhatsApp()">
+                                <input type="text" id="wa-telefono-pastor" class="form-control" style="max-width: 125px;" placeholder="Teléfono">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-secondary mb-1">2. Tipo de Notificación:</label>
+                            <select id="wa-tipo-notificacion" class="form-select form-select-sm border-primary" onchange="actualizarMensajeWhatsApp()">
+                                <option value="faltante">📋 Solicitar Faltante de Datos</option>
+                                <option value="recordatorio">⏰ Recordatorio de Entrega de Lista</option>
+                                <option value="confirmacion">✅ Confirmación de Concentrado Recibido</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="wa-bloque-faltantes" class="mb-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Selecciona qué información falta:</label>
+                        <div class="p-2.5 border rounded-3 bg-light d-flex flex-wrap gap-3 p-2">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input wa-check-faltante" type="checkbox" value="👧👦 Listado de Niños (2 - 4 años)" id="chk-2-4" onchange="actualizarMensajeWhatsApp()">
+                                <label class="form-check-label small" for="chk-2-4">👶 Niños (2-4 años)</label>
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input wa-check-faltante" type="checkbox" value="👧👦 Listado de Niños (5 - 9 años)" id="chk-5-9" onchange="actualizarMensajeWhatsApp()">
+                                <label class="form-check-label small" for="chk-5-9">🧒 Niños (5-9 años)</label>
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input wa-check-faltante" type="checkbox" value="👧👦 Listado de Niños (10 - 14 años)" id="chk-10-14" onchange="actualizarMensajeWhatsApp()">
+                                <label class="form-check-label small" for="chk-10-14">🧑 Niños (10-14 años)</label>
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input wa-check-faltante" type="checkbox" value="📍 Domicilio / Municipio exacto" id="chk-domicilio" onchange="actualizarMensajeWhatsApp()">
+                                <label class="form-check-label small" for="chk-domicilio">📍 Domicilio / Municipio</label>
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input wa-check-faltante" type="checkbox" value="📅 Fecha de entrega de lista" id="chk-fecha" onchange="actualizarMensajeWhatsApp()">
+                                <label class="form-check-label small" for="chk-fecha">📅 Fecha de Entrega</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Nota adicional (Opcional):</label>
+                        <input type="text" id="wa-nota-adicional" class="form-control form-control-sm" placeholder="Ej. Por favor enviar antes del viernes..." oninput="actualizarMensajeWhatsApp()">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-success mb-1">3. Mensaje Final (Totalmente Editable):</label>
+                        <textarea id="wa-mensaje-final" rows="7" class="form-control font-monospace small"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary btn-sm fw-bold px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" onclick="copiarMensajeWhatsApp()" class="btn btn-outline-success btn-sm fw-bold px-3">
+                        <i class="bi bi-clipboard me-1"></i> Copiar
+                    </button>
+                    <button type="button" onclick="enviarWhatsAppDirecto()" class="btn btn-whatsapp btn-sm fw-bold px-4">
+                        <i class="bi bi-whatsapp me-1"></i> Enviar
+                    </button>
                 </div>
             </div>
         </div>
@@ -1024,6 +1165,137 @@
             cargarDatosAdmin();
         }
 
+        // ============================================================
+        // FUNCIONES DE TRASLADO ENTRE ZONAS
+        // ============================================================
+        function abrirModalTrasladarZona() {
+            if (!iglesiaSeleccionada) return;
+            document.getElementById('trasladar-nombre-iglesia').textContent = iglesiaSeleccionada.nombre_iglesia;
+            document.getElementById('trasladar-zona-destino').value = String(iglesiaSeleccionada.zona_id || zonaActualId);
+            const modal = new bootstrap.Modal(document.getElementById('modalTrasladarZona'));
+            modal.show();
+        }
+
+        async function confirmarTrasladoZona() {
+            if (!iglesiaSeleccionada) return;
+            const selectDestino = document.getElementById('trasladar-zona-destino');
+            const nuevaZonaId = parseInt(selectDestino.value, 10);
+            const nombreZonaDestino = selectDestino.options[selectDestino.selectedIndex].text;
+
+            if (nuevaZonaId === iglesiaSeleccionada.zona_id) {
+                alert('La iglesia ya se encuentra registrada en esa zona.');
+                return;
+            }
+
+            const btn = document.getElementById('btn-confirmar-traslado');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Trasladando...`;
+
+            try {
+                const { error } = await _supabase
+                    .from('iglesias')
+                    .update({ zona_id: nuevaZonaId })
+                    .eq('id', iglesiaSeleccionada.id);
+
+                if (error) throw error;
+
+                alert(`¡Iglesia "${iglesiaSeleccionada.nombre_iglesia}" trasladada exitosamente a la zona ${nombreZonaDestino}!`);
+                bootstrap.Modal.getInstance(document.getElementById('modalTrasladarZona')).hide();
+                volverAlAdmin();
+            } catch (err) {
+                alert('Error al trasladar la iglesia: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Confirmar Traslado`;
+            }
+        }
+
+        // ============================================================
+        // FUNCIONES DE NOTIFICACIÓN POR WHATSAPP
+        // ============================================================
+        function abrirModalNotificarWhatsApp() {
+            if (!iglesiaSeleccionada) return;
+            document.getElementById('wa-nombre-pastor').value = iglesiaSeleccionada.nombre_pastor || '';
+            document.getElementById('wa-telefono-pastor').value = iglesiaSeleccionada.telefono || '';
+            document.getElementById('wa-tipo-notificacion').value = 'faltante';
+            document.getElementById('wa-nota-adicional').value = '';
+
+            document.querySelectorAll('.wa-check-faltante').forEach(chk => {
+                chk.checked = false;
+            });
+
+            actualizarMensajeWhatsApp();
+            const modal = new bootstrap.Modal(document.getElementById('modalNotificarWhatsApp'));
+            modal.show();
+        }
+
+        function actualizarMensajeWhatsApp() {
+            if (!iglesiaSeleccionada) return;
+            const pastor = document.getElementById('wa-nombre-pastor').value.trim() || 'Pastor';
+            const iglesia = iglesiaSeleccionada.nombre_iglesia || 'su congregación';
+            const tipo = document.getElementById('wa-tipo-notificacion').value;
+            const nota = document.getElementById('wa-nota-adicional').value.trim();
+
+            const bloqueFaltantes = document.getElementById('wa-bloque-faltantes');
+            const faltantesSeleccionados = Array.from(document.querySelectorAll('.wa-check-faltante:checked'))
+                .map(chk => `• ${chk.value}`);
+
+            let msg = `¡Dios le bendiga Pastor ${pastor}!\n`;
+            msg += `Le saludamos de Operación Niño de la Navidad (Samaritan's Purse).\n\n`;
+
+            if (tipo === 'faltante') {
+                bloqueFaltantes.classList.remove('d-none');
+                msg += `Le escribimos para solicitar respetuosamente complementar la información de su iglesia *${iglesia}*.\n\n`;
+                if (faltantesSeleccionados.length > 0) {
+                    msg += `Actualmente nos falta la siguiente información:\n${faltantesSeleccionados.join('\n')}\n\n`;
+                } else {
+                    msg += `Actualmente nos falta la siguiente información:\n• (Seleccione arriba qué información falta)\n\n`;
+                }
+            } else if (tipo === 'recordatorio') {
+                bloqueFaltantes.classList.add('d-none');
+                msg += `Le enviamos un atento recordatorio respecto a la entrega del listado nominal y concentrado de su iglesia *${iglesia}*.\n\n`;
+            } else if (tipo === 'confirmacion') {
+                bloqueFaltantes.classList.add('d-none');
+                msg += `Le confirmamos que hemos recibido satisfactoriamente el concentrado general de su iglesia *${iglesia}* con un total de *${iglesiaSeleccionada.ninos.length}* niños registrados.\n\n`;
+            }
+
+            if (nota) {
+                msg += `📌 *Nota:* ${nota}\n\n`;
+            }
+
+            msg += `Quedamos a sus órdenes. ¡Muchas bendiciones!`;
+            document.getElementById('wa-mensaje-final').value = msg;
+        }
+
+        function copiarMensajeWhatsApp() {
+            const textarea = document.getElementById('wa-mensaje-final');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                alert('Mensaje copiado al portapapeles.');
+            });
+        }
+
+        function enviarWhatsAppDirecto() {
+            let telefono = document.getElementById('wa-telefono-pastor').value.replace(/\D/g, '');
+            const mensaje = document.getElementById('wa-mensaje-final').value.trim();
+
+            if (!telefono) {
+                alert('Por favor ingrese un número de teléfono válido para enviar el mensaje.');
+                document.getElementById('wa-telefono-pastor').focus();
+                return;
+            }
+
+            if (telefono.length === 10) {
+                telefono = '52' + telefono;
+            }
+
+            const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+
+        // ============================================================
+        // EDICIÓN Y ELIMINACIÓN DE IGLESIA
+        // ============================================================
         function abrirModalEdicionIglesia() {
             if(!iglesiaSeleccionada) return;
             document.getElementById('edit_nombre_iglesia').value = iglesiaSeleccionada.nombre_iglesia;
@@ -1126,6 +1398,9 @@
             }
         }
 
+        // ============================================================
+        // EXPORTACIONES A PDF Y EXCEL
+        // ============================================================
         function renderEncabezadoIglesia(doc, iglesia, logoBase64, startY, titulo) {
             if (logoBase64) {
                 doc.addImage(logoBase64, 'JPEG', 14, startY, 20, 20);
