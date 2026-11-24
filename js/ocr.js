@@ -1,35 +1,61 @@
+let archivoCapturaPendiente = null;
+
+// Evita que el navegador abra la imagen en otra pestaña si se suelta fuera del cuadro
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => e.preventDefault());
+
 document.addEventListener('DOMContentLoaded', () => {
     const dropzone = document.getElementById('ocr-dropzone');
     const fileInput = document.getElementById('ocr-file-input');
+    const btnSeleccionar = document.getElementById('btn-seleccionar-captura');
+    const btnCambiar = document.getElementById('btn-cambiar-captura');
+    const btnEscanear = document.getElementById('btn-iniciar-escaneo');
 
     if (!dropzone || !fileInput) return;
 
-    dropzone.addEventListener('click', () => fileInput.click());
+    btnSeleccionar?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
+
+    btnCambiar?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
+
+    dropzone.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        fileInput.click();
+    });
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files[0]) {
-            procesarImagenOCR(e.target.files[0]);
+            cargarVistaPreviaCaptura(e.target.files[0]);
         }
     });
 
     dropzone.addEventListener('dragover', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         dropzone.classList.add('dragover');
     });
 
-    dropzone.addEventListener('dragleave', () => {
+    dropzone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         dropzone.classList.remove('dragover');
     });
 
     dropzone.addEventListener('drop', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         dropzone.classList.remove('dragover');
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            procesarImagenOCR(e.dataTransfer.files[0]);
+            cargarVistaPreviaCaptura(e.dataTransfer.files[0]);
         }
     });
 
-    // Permite pegar captura directamente con Ctrl+V cuando estás en el formulario
+    // Pegar captura directamente con Ctrl + V
     document.addEventListener('paste', (e) => {
         const vistaForm = document.getElementById('vista-form');
         if (!vistaForm || vistaForm.classList.contains('d-none')) return;
@@ -38,21 +64,41 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let item of items) {
             if (item.type.indexOf('image') !== -1) {
                 const blob = item.getAsFile();
-                procesarImagenOCR(blob);
+                cargarVistaPreviaCaptura(blob);
                 break;
             }
         }
     });
+
+    btnEscanear?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (archivoCapturaPendiente) {
+            procesarImagenOCR(archivoCapturaPendiente);
+        }
+    });
 });
+
+function cargarVistaPreviaCaptura(archivo) {
+    archivoCapturaPendiente = archivo;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('ocr-preview-img').src = e.target.result;
+        document.getElementById('ocr-placeholder').classList.add('d-none');
+        document.getElementById('ocr-preview-box').classList.remove('d-none');
+    };
+    reader.readAsDataURL(archivo);
+}
 
 async function procesarImagenOCR(archivo) {
     const statusDiv = document.getElementById('ocr-status');
     const statusText = document.getElementById('ocr-status-text');
     const progressBar = document.getElementById('ocr-progress-bar');
+    const btnEscanear = document.getElementById('btn-iniciar-escaneo');
 
+    btnEscanear.disabled = true;
     statusDiv.classList.remove('d-none');
-    statusText.textContent = 'Iniciando motor lector local...';
-    progressBar.style.width = '10%';
+    statusText.textContent = 'Descargando diccionario español (solo la primera vez)...';
+    progressBar.style.width = '15%';
 
     try {
         const worker = await Tesseract.createWorker('spa', 1, {
@@ -60,7 +106,7 @@ async function procesarImagenOCR(archivo) {
                 if (m.status === 'recognizing text') {
                     const pct = Math.round(m.progress * 100);
                     progressBar.style.width = `${pct}%`;
-                    statusText.textContent = `Leyendo captura: ${pct}%...`;
+                    statusText.textContent = `Escaneando nombres y datos: ${pct}%...`;
                 }
             }
         });
@@ -68,20 +114,23 @@ async function procesarImagenOCR(archivo) {
         const ret = await worker.recognize(archivo);
         await worker.terminate();
 
-        rellenarFormularioDesdeTexto(ret.data.text);
+        const totalDetectados = rellenarFormularioDesdeTexto(ret.data.text);
 
-        statusText.textContent = '¡Datos extraídos y rellenados correctamente!';
+        statusText.textContent = `¡Listo! Se cargaron ${totalDetectados} niños y los datos de la iglesia.`;
         progressBar.classList.remove('bg-info');
         progressBar.classList.add('bg-success');
+
         setTimeout(() => {
             statusDiv.classList.add('d-none');
             progressBar.classList.remove('bg-success');
             progressBar.classList.add('bg-info');
             progressBar.style.width = '0%';
-        }, 3500);
+            btnEscanear.disabled = false;
+        }, 4000);
     } catch (error) {
-        alert('No se pudo leer la imagen: ' + error.message);
+        alert('Error al leer la captura: ' + error.message);
         statusDiv.classList.add('d-none');
+        btnEscanear.disabled = false;
     }
 }
 
@@ -91,6 +140,23 @@ function normalizarClave(str) {
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^A-Z0-9_]/g, '');
+}
+
+function limpiarValorGeneral(val) {
+    const limpio = sanitizarTexto(val);
+    if (/no\s*especificado|ninguno|n\/a/i.test(limpio)) return '';
+    return limpio;
+}
+
+function limpiarNombreNino(linea) {
+    let texto = linea
+        // Quita viñetas iniciales (-, •, *, o, 0, números)
+        .replace(/^[-•*oO0-9.)\s]+/, '')
+        // Quita etiquetas de archivo de Gemini tipo "Censo_Galilea_150_con..."
+        .replace(/\b[A-Za-z0-9]+_[A-Za-z0-9_.-]+.*$/g, '')
+        // Quita "+3" o símbolos sueltos al final
+        .replace(/\s*\+\d+\s*$/, '');
+    return sanitizarTexto(texto);
 }
 
 function rellenarFormularioDesdeTexto(textoCrudo) {
@@ -112,36 +178,36 @@ function rellenarFormularioDesdeTexto(textoCrudo) {
 
         if (idxDosPuntos !== -1) {
             const clave = normalizarClave(linea.substring(0, idxDosPuntos));
-            const valor = sanitizarTexto(linea.substring(idxDosPuntos + 1));
+            const valor = limpiarValorGeneral(linea.substring(idxDosPuntos + 1));
 
             if (clave.includes('ZONA')) {
                 seccionActual = null;
-                seleccionarZonaPorNombre(valor);
+                if (valor) seleccionarZonaPorNombre(valor);
                 return;
             }
             if (clave.includes('IGLESIA')) {
                 seccionActual = null;
-                document.getElementById('nombre_iglesia').value = valor;
+                if (valor) document.getElementById('nombre_iglesia').value = valor;
                 return;
             }
             if (clave.includes('PASTOR')) {
                 seccionActual = null;
-                document.getElementById('nombre_pastor').value = valor;
+                if (valor) document.getElementById('nombre_pastor').value = valor;
                 return;
             }
             if (clave.includes('DOMICILIO')) {
                 seccionActual = null;
-                document.getElementById('domicilio').value = valor;
+                if (valor) document.getElementById('domicilio').value = valor;
                 return;
             }
             if (clave.includes('TELEFONO') || clave.includes('CELULAR')) {
                 seccionActual = null;
-                document.getElementById('telefono').value = valor;
+                if (valor) document.getElementById('telefono').value = valor;
                 return;
             }
             if (clave.includes('MUNICIPIO')) {
                 seccionActual = null;
-                document.getElementById('municipio_estado').value = valor;
+                if (valor) document.getElementById('municipio_estado').value = valor;
                 return;
             }
             if (clave.includes('FECHA')) {
@@ -151,7 +217,6 @@ function rellenarFormularioDesdeTexto(textoCrudo) {
                 return;
             }
 
-            // Detección de secciones de edades
             if (clave.includes('NINAS') && clave.includes('2')) { seccionActual = 'ninas_2_4'; return; }
             if (clave.includes('NINOS') && clave.includes('2')) { seccionActual = 'ninos_2_4'; return; }
             if (clave.includes('NINAS') && clave.includes('5')) { seccionActual = 'ninas_5_9'; return; }
@@ -160,21 +225,23 @@ function rellenarFormularioDesdeTexto(textoCrudo) {
             if (clave.includes('NINOS') && clave.includes('10')) { seccionActual = 'ninos_10_14'; return; }
         }
 
-        // Si estamos dentro de una categoría de edades, agregamos el nombre
         if (seccionActual) {
-            const nombreLimpio = sanitizarTexto(linea.replace(/^[-•*0-9.)\s]+/, ''));
-            if (nombreLimpio.length > 2) {
+            const nombreLimpio = limpiarNombreNino(linea);
+            if (nombreLimpio.length > 3) {
                 listas[seccionActual].push(nombreLimpio);
             }
         }
     });
 
-    // Rellenar los contenedores dinámicos
+    let total = 0;
     Object.keys(listas).forEach(catId => {
         if (listas[catId].length > 0) {
+            total += listas[catId].length;
             inicializarInputsDinamicos(`container_${catId}`, listas[catId]);
         }
     });
+
+    return total;
 }
 
 function seleccionarZonaPorNombre(textoZona) {
