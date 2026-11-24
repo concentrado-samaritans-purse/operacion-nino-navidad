@@ -7,17 +7,22 @@ let zonaActualId = null;
 let iglesiaSeleccionada = null;
 let datosIglesiasZona = [];
 
-// Catálogo maestro de zonas
+// Contraseña maestra universal
+const MASTER_ADMIN_PASS = 'admin123';
+
+// Catálogo maestro de zonas (incluyendo Cd. Alemán y Coatepec con contraseña admin123)
 const ZONAS_CATALOGO = [
-    { id: 1, nombre: 'San Andrés' },
-    { id: 2, nombre: 'Tezonapa' },
-    { id: 3, nombre: 'Orizaba' },
-    { id: 4, nombre: 'Xalapa' },
-    { id: 5, nombre: 'Manlio' },
-    { id: 6, nombre: 'Medellín' },
-    { id: 7, nombre: 'Carlos A. Carrillo' },
-    { id: 8, nombre: 'Sayula' },
-    { id: 9, nombre: 'Cosamaloapan' }
+    { id: 1, nombre: 'San Andrés', pass: 'admin123' },
+    { id: 2, nombre: 'Tezonapa', pass: 'admin123' },
+    { id: 3, nombre: 'Orizaba', pass: 'admin123' },
+    { id: 4, nombre: 'Xalapa', pass: 'admin123' },
+    { id: 5, nombre: 'Manlio', pass: 'admin123' },
+    { id: 6, nombre: 'Medellín', pass: 'admin123' },
+    { id: 7, nombre: 'Carlos A. Carrillo', pass: 'admin123' },
+    { id: 8, nombre: 'Sayula', pass: 'admin123' },
+    { id: 9, nombre: 'Cosamaloapan', pass: 'admin123' },
+    { id: 10, nombre: 'Cd. Alemán', pass: 'admin123' },
+    { id: 11, nombre: 'Coatepec', pass: 'admin123' }
 ];
 
 // Categorías de edades
