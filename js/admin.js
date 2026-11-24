@@ -1,27 +1,37 @@
 async function verificarLogin() {
     const zonaId = parseInt(document.getElementById('login-zona').value, 10);
-    const pass = document.getElementById('login-pass').value;
+    const pass = document.getElementById('login-pass').value.trim();
 
     if (isNaN(zonaId)) {
         alert('Seleccione una zona válida.');
         return;
     }
 
+    const zonaCatalogo = ZONAS_CATALOGO.find(z => z.id === zonaId);
+    let nombreZona = zonaCatalogo ? zonaCatalogo.nombre : `Zona ${zonaId}`;
+    let passValido = false;
+
+    // Intenta consultar en Supabase si existe la zona
     const { data, error } = await _supabase
         .from('zonas')
         .select('*')
         .eq('id', zonaId)
         .single();
 
-    if (error || !data) {
-        alert('Error al validar la zona.');
-        return;
+    if (!error && data) {
+        nombreZona = data.nombre_zona || nombreZona;
+        if (data.password_admin === pass || pass === MASTER_ADMIN_PASS) {
+            passValido = true;
+        }
+    } else if (zonaCatalogo && (pass === zonaCatalogo.pass || pass === MASTER_ADMIN_PASS)) {
+        // Respaldo local para zonas nuevas en catálogo si aún no están en tabla zonas
+        passValido = true;
     }
 
-    if (data.password_admin === pass) {
+    if (passValido) {
         zonaActualId = zonaId;
         document.getElementById('titulo-zona-admin').innerHTML = `<i class="bi bi-speedometer2 me-2"></i>Panel de Administración`;
-        document.getElementById('subtitulo-zona').innerText = `Zona activa: ${data.nombre_zona.toUpperCase()}`;
+        document.getElementById('subtitulo-zona').innerText = `Zona activa: ${nombreZona.toUpperCase()}`;
         document.getElementById('admin-login').classList.add('d-none');
         document.getElementById('admin-dashboard').classList.remove('d-none');
         cargarDatosAdmin();
