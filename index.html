@@ -80,13 +80,32 @@
             <div class="mb-4">
                 <div id="ocr-dropzone" class="ocr-dropzone shadow-sm">
                     <input type="file" id="ocr-file-input" accept="image/*" class="d-none">
-                    <div class="fs-1 mb-1">📷</div>
-                    <h5 class="ocr-title">ESCANEAR CAPTURA GEMINI</h5>
-                    <p class="ocr-subtitle">Haz clic, arrastra la captura o presiona <strong>Ctrl + V</strong> aquí para auto-rellenar los datos</p>
                     
-                    <div id="ocr-status" class="mt-3 d-none mx-auto" style="max-width: 400px;">
+                    <div id="ocr-placeholder">
+                        <div class="fs-1 mb-1">📷</div>
+                        <h5 class="ocr-title">ESCANEAR CAPTURA GEMINI</h5>
+                        <p class="ocr-subtitle mb-3">Arrastra la captura aquí, presiona <strong>Ctrl + V</strong> o usa el botón inferior</p>
+                        <button type="button" id="btn-seleccionar-captura" class="btn btn-warning fw-bold btn-sm px-3 shadow-sm">
+                            <i class="bi bi-image me-1"></i> Seleccionar Captura de Pantalla
+                        </button>
+                    </div>
+
+                    <!-- Vista previa y botón explícito de escaneo -->
+                    <div id="ocr-preview-box" class="d-none">
+                        <img id="ocr-preview-img" src="" alt="Vista previa" class="img-fluid rounded border border-info mb-3" style="max-height: 200px;">
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <button type="button" id="btn-iniciar-escaneo" class="btn btn-warning fw-bold px-4 shadow">
+                                <i class="bi bi-cpu-fill me-1"></i> Escanear y Rellenar Datos
+                            </button>
+                            <button type="button" id="btn-cambiar-captura" class="btn btn-outline-light btn-sm">
+                                Cambiar imagen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="ocr-status" class="mt-3 d-none mx-auto" style="max-width: 420px;">
                         <div class="small text-info fw-bold mb-1" id="ocr-status-text">Procesando...</div>
-                        <div class="progress" style="height: 8px;">
+                        <div class="progress" style="height: 10px;">
                             <div id="ocr-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
                         </div>
                     </div>
