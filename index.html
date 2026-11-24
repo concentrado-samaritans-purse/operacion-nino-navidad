@@ -204,6 +204,8 @@
                         <option value="5">Manlio</option>
                         <option value="6">Medellín</option>
                         <option value="7">Carlos A. Carrillo</option>
+                        <option value="8">Sayula</option>
+                        <option value="9">Cosamaloapan</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -298,12 +300,14 @@
                     <label class="form-label fw-bold">Zona:</label>
                     <select id="login-zona" class="form-select bg-light">
                         <option value="1">San Andrés</option>
-                        <option value="2">Tezonapan</option>
+                        <option value="2">Tezonapa</option>
                         <option value="3">Orizaba</option>
                         <option value="4">Xalapa</option>
                         <option value="5">Manlio</option>
                         <option value="6">Medellín</option>
                         <option value="7">Carlos A. Carrillo</option>
+                        <option value="8">Sayula</option>
+                        <option value="9">Cosamaloapan</option>
                     </select>
                 </div>
                 <div class="text-start mb-4">
@@ -563,6 +567,8 @@
                             <option value="5">Manlio</option>
                             <option value="6">Medellín</option>
                             <option value="7">Carlos A. Carrillo</option>
+                            <option value="8">Sayula</option>
+                            <option value="9">Cosamaloapan</option>
                         </select>
                     </div>
                     <button type="button" id="btn-confirmar-traslado" onclick="confirmarTrasladoZona()" class="btn btn-trasladar w-100 py-2 fw-bold rounded-3 shadow-sm">
@@ -817,7 +823,7 @@
                 const municipio_estado = sanitizarTexto(document.getElementById('municipio_estado').value);
                 const fecha_entrega = document.getElementById('fecha_entrega').value;
 
-                if (isNaN(zona_id) || zona_id < 1 || zona_id > 7) {
+                if (isNaN(zona_id) || zona_id < 1 || zona_id > 9) {
                     throw new Error('Zona seleccionada no válida.');
                 }
 
