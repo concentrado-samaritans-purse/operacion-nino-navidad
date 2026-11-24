@@ -76,6 +76,28 @@
             <h2 class="text-title-green mb-2"><i class="bi bi-clipboard2-plus-fill me-2"></i>Concentrado General de Niños por Iglesia</h2>
             <p class="text-muted mb-4">Complete la información general y registre cada niño en su casillero correspondiente.</p>
 
+            <!-- ZONA DE ESCANEO DE CAPTURA (OCR LOCAL SIN API) -->
+            <div class="mb-4">
+                <div id="ocr-dropzone" class="ocr-dropzone shadow-sm">
+                    <input type="file" id="ocr-file-input" accept="image/*" class="d-none">
+                    <div class="fs-1 mb-1">📷</div>
+                    <h5 class="ocr-title">ESCANEAR CAPTURA GEMINI</h5>
+                    <p class="ocr-subtitle">Haz clic, arrastra la captura o presiona <strong>Ctrl + V</strong> aquí para auto-rellenar los datos</p>
+                    
+                    <div id="ocr-status" class="mt-3 d-none mx-auto" style="max-width: 400px;">
+                        <div class="small text-info fw-bold mb-1" id="ocr-status-text">Procesando...</div>
+                        <div class="progress" style="height: 8px;">
+                            <div id="ocr-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-end mt-1">
+                    <button type="button" class="btn btn-link btn-sm text-success fw-bold text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalPlantillaIA">
+                        <i class="bi bi-clipboard-check me-1"></i> Copiar plantilla para pedir datos a la IA
+                    </button>
+                </div>
+            </div>
+
             <form id="form-iglesia" onsubmit="guardarRegistro(event)" class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold"><i class="bi bi-geo-alt-fill text-success me-1"></i> Zona de Procedencia:</label>
@@ -326,6 +348,47 @@
 
     </main>
 
+    <!-- MODAL PLANTILLA PARA IA EXTERNA -->
+    <div class="modal fade" id="modalPlantillaIA" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-dark rounded-4">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">📋 Plantilla para Organizar Datos con IA</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Copia este texto, pégalo en Gemini junto con la foto o PDF de la lista, toma captura del resultado y súbela al recuadro azul:</p>
+                    <textarea id="texto-plantilla-ia" rows="14" class="form-control font-monospace small bg-light" readonly>Extrae los datos de esta imagen/documento y devuélvelos ÚNICAMENTE con este formato exacto, sin texto adicional ni asteriscos:
+
+ZONA: [Nombre de la zona]
+IGLESIA: [Nombre de la iglesia]
+PASTOR: [Nombre del pastor]
+DOMICILIO: [Domicilio]
+TELEFONO: [Teléfono]
+MUNICIPIO: [Municipio, Estado]
+FECHA: [AAAA-MM-DD]
+NINAS_2_4:
+- Nombre completo
+NINOS_2_4:
+- Nombre completo
+NINAS_5_9:
+- Nombre completo
+NINOS_5_9:
+- Nombre completo
+NINAS_10_14:
+- Nombre completo
+NINOS_10_14:
+- Nombre completo</textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-sm fw-bold" onclick="navigator.clipboard.writeText(document.getElementById('texto-plantilla-ia').value); alert('Plantilla copiada');">
+                        <i class="bi bi-clipboard me-1"></i> Copiar Plantilla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE EDICIÓN -->
     <div class="modal fade" id="modalEditarIglesia" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -512,6 +575,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
     <!-- MÓDULOS DE LA APLICACIÓN (EN ORDEN DE DEPENDENCIA) -->
     <script src="js/config.js"></script>
@@ -519,6 +583,7 @@
     <script src="js/registro.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/reportes.js"></script>
+    <script src="js/ocr.js"></script>
 
 </body>
 </html>
