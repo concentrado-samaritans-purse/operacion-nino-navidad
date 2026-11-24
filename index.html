@@ -76,34 +76,39 @@
             <h2 class="text-title-green mb-2"><i class="bi bi-clipboard2-plus-fill me-2"></i>Concentrado General de Niños por Iglesia</h2>
             <p class="text-muted mb-4">Complete la información general y registre cada niño en su casillero correspondiente.</p>
 
-            <!-- ZONA DE ESCANEO DE CAPTURA (OCR LOCAL SIN API) -->
+            <!-- ZONA DE ESCANEO DE CAPTURA (OCR LOCAL SIN API - MÚLTIPLES IMÁGENES) -->
             <div class="mb-4">
                 <div id="ocr-dropzone" class="ocr-dropzone shadow-sm">
-                    <input type="file" id="ocr-file-input" accept="image/*" class="d-none">
+                    <input type="file" id="ocr-file-input" accept="image/*" multiple class="d-none">
                     
                     <div id="ocr-placeholder">
                         <div class="fs-1 mb-1">📷</div>
-                        <h5 class="ocr-title">ESCANEAR CAPTURA GEMINI</h5>
-                        <p class="ocr-subtitle mb-3">Arrastra la captura aquí, presiona <strong>Ctrl + V</strong> o usa el botón inferior</p>
+                        <h5 class="ocr-title">ESCANEAR CAPTURAS GEMINI</h5>
+                        <p class="ocr-subtitle mb-3">Arrastra una o varias capturas aquí, presiona <strong>Ctrl + V</strong> o usa el botón inferior</p>
                         <button type="button" id="btn-seleccionar-captura" class="btn btn-warning fw-bold btn-sm px-3 shadow-sm">
-                            <i class="bi bi-image me-1"></i> Seleccionar Captura de Pantalla
+                            <i class="bi bi-images me-1"></i> Seleccionar Capturas de Pantalla
                         </button>
                     </div>
 
-                    <!-- Vista previa y botón explícito de escaneo -->
+                    <!-- Cuadrícula de vista previa para múltiples capturas -->
                     <div id="ocr-preview-box" class="d-none">
-                        <img id="ocr-preview-img" src="" alt="Vista previa" class="img-fluid rounded border border-info mb-3" style="max-height: 200px;">
+                        <div id="ocr-preview-grid" class="d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
+                        <p class="small text-info mb-3" id="ocr-contador-imagenes">0 imágenes listas para escanear</p>
+                        
                         <div class="d-flex justify-content-center gap-2 flex-wrap">
                             <button type="button" id="btn-iniciar-escaneo" class="btn btn-warning fw-bold px-4 shadow">
-                                <i class="bi bi-cpu-fill me-1"></i> Escanear y Rellenar Datos
+                                <i class="bi bi-cpu-fill me-1"></i> Escanear Todas y Rellenar
                             </button>
-                            <button type="button" id="btn-cambiar-captura" class="btn btn-outline-light btn-sm">
-                                Cambiar imagen
+                            <button type="button" id="btn-agregar-mas-capturas" class="btn btn-outline-info btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Agregar más
+                            </button>
+                            <button type="button" id="btn-limpiar-capturas" class="btn btn-outline-light btn-sm">
+                                <i class="bi bi-trash me-1"></i> Limpiar lista
                             </button>
                         </div>
                     </div>
                     
-                    <div id="ocr-status" class="mt-3 d-none mx-auto" style="max-width: 420px;">
+                    <div id="ocr-status" class="mt-3 d-none mx-auto" style="max-width: 450px;">
                         <div class="small text-info fw-bold mb-1" id="ocr-status-text">Procesando...</div>
                         <div class="progress" style="height: 10px;">
                             <div id="ocr-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-info" style="width: 0%"></div>
