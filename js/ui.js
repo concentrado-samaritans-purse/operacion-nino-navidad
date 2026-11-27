@@ -8,6 +8,16 @@ function sanitizarTexto(str) {
     return str.replace(/[<>]/g, '').trim();
 }
 
+function normalizarBusqueda(str) {
+    if (!str) return '';
+    return str
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+}
+
 function cargarSelectoresZonas() {
     const selectores = [
         { id: 'zona_id', placeholder: 'Seleccione una zona...' },
