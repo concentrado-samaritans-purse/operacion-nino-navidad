@@ -11,7 +11,6 @@ async function verificarLogin() {
     let nombreZona = zonaCatalogo ? zonaCatalogo.nombre : `Zona ${zonaId}`;
     let passValido = false;
 
-    // Intenta consultar en Supabase si existe la zona
     const { data, error } = await _supabase
         .from('zonas')
         .select('*')
@@ -24,7 +23,6 @@ async function verificarLogin() {
             passValido = true;
         }
     } else if (zonaCatalogo && (pass === zonaCatalogo.pass || pass === MASTER_ADMIN_PASS)) {
-        // Respaldo local para zonas nuevas en catálogo si aún no están en tabla zonas
         passValido = true;
     }
 
@@ -72,16 +70,20 @@ function limpiarFiltros() {
 }
 
 function filtrarIglesias() {
-    const query = sanitizarTexto(document.getElementById('buscador-iglesias').value).toLowerCase();
+    const query = normalizarBusqueda(document.getElementById('buscador-iglesias').value);
     const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
     const fechaFin = document.getElementById('filtro-fecha-fin').value;
     const orden = document.getElementById('filtro-orden').value;
 
     let filtradas = datosIglesiasZona.filter(iglesia => {
+        const nombreIglesiaNorm = normalizarBusqueda(iglesia.nombre_iglesia);
+        const nombrePastorNorm = normalizarBusqueda(iglesia.nombre_pastor);
+        const municipioNorm = normalizarBusqueda(iglesia.municipio_estado);
+
         let coincideTexto =
-            iglesia.nombre_iglesia.toLowerCase().includes(query) ||
-            iglesia.nombre_pastor.toLowerCase().includes(query) ||
-            iglesia.municipio_estado.toLowerCase().includes(query);
+            nombreIglesiaNorm.includes(query) ||
+            nombrePastorNorm.includes(query) ||
+            municipioNorm.includes(query);
 
         let coincideFecha = true;
         if (fechaInicio && iglesia.fecha_entrega < fechaInicio) coincideFecha = false;
@@ -91,7 +93,7 @@ function filtrarIglesias() {
     });
 
     filtradas.sort((a, b) => {
-        if (orden === 'nombre-asc') return a.nombre_iglesia.localeCompare(b.nombre_iglesia);
+        if (orden === 'nombre-asc') return a.nombre_iglesia.localeCompare(b.nombre_iglesia, 'es', { sensitivity: 'base' });
         if (orden === 'fecha-reciente') return new Date(b.fecha_entrega) - new Date(a.fecha_entrega);
         if (orden === 'infantes-mayor') return b.ninos.length - a.ninos.length;
         return 0;
@@ -106,8 +108,37 @@ function renderizarDashboard(listaIglesias) {
     contenedorCatalogo.innerHTML = '';
 
     let totalCajitas = 0;
+    let total2a4 = 0;
+    let ninas2a4 = 0;
+    let ninos2a4 = 0;
+
+    let total5a9 = 0;
+    let ninas5a9 = 0;
+    let ninos5a9 = 0;
+
+    let total10a14 = 0;
+    let ninas10a14 = 0;
+    let ninos10a14 = 0;
+
     datosIglesiasZona.forEach(iglesia => {
-        totalCajitas += iglesia.ninos.length;
+        const listaNinos = iglesia.ninos || [];
+        totalCajitas += listaNinos.length;
+
+        listaNinos.forEach(n => {
+            if (n.rango_edad === '2-4') {
+                total2a4++;
+                if (n.genero === 'niña') ninas2a4++;
+                else if (n.genero === 'niño') ninos2a4++;
+            } else if (n.rango_edad === '5-9') {
+                total5a9++;
+                if (n.genero === 'niña') ninas5a9++;
+                else if (n.genero === 'niño') ninos5a9++;
+            } else if (n.rango_edad === '10-14') {
+                total10a14++;
+                if (n.genero === 'niña') ninas10a14++;
+                else if (n.genero === 'niño') ninos10a14++;
+            }
+        });
     });
 
     if (listaIglesias.length === 0) {
@@ -175,6 +206,38 @@ function renderizarDashboard(listaIglesias) {
                     <p class="h2 fw-bold mb-0">${datosIglesiasZona.length}</p>
                 </div>
                 <i class="bi bi-person-badge-fill fs-1 opacity-50 text-success"></i>
+            </div>
+        </div>
+
+        <!-- CONTADORES GENERALES POR RANGO DE EDAD -->
+        <div class="col-12 col-md-4">
+            <div class="card text-white p-3 rounded-4 shadow h-100 d-flex flex-row align-items-center justify-content-between" style="background-color: #0d9488;">
+                <div>
+                    <h6 class="text-uppercase small opacity-75 mb-1">Niñas / Niños (2 - 4 años)</h6>
+                    <p class="h2 fw-bold mb-1">${total2a4}</p>
+                    <small class="opacity-75">👧 ${ninas2a4} Niñas  |  👦 ${ninos2a4} Niños</small>
+                </div>
+                <i class="bi bi-emoji-smile-fill fs-1 opacity-50"></i>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-white p-3 rounded-4 shadow h-100 d-flex flex-row align-items-center justify-content-between" style="background-color: #d97706;">
+                <div>
+                    <h6 class="text-uppercase small opacity-75 mb-1">Niñas / Niños (5 - 9 años)</h6>
+                    <p class="h2 fw-bold mb-1">${total5a9}</p>
+                    <small class="opacity-75">👧 ${ninas5a9} Niñas  |  👦 ${ninos5a9} Niños</small>
+                </div>
+                <i class="bi bi-people-fill fs-1 opacity-50"></i>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card text-white p-3 rounded-4 shadow h-100 d-flex flex-row align-items-center justify-content-between" style="background-color: #6d28d9;">
+                <div>
+                    <h6 class="text-uppercase small opacity-75 mb-1">Niñas / Niños (10 - 14 años)</h6>
+                    <p class="h2 fw-bold mb-1">${total10a14}</p>
+                    <small class="opacity-75">👧 ${ninas10a14} Niñas  |  👦 ${ninos10a14} Niños</small>
+                </div>
+                <i class="bi bi-person-arms-up fs-1 opacity-50"></i>
             </div>
         </div>
     `;
